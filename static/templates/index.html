@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Detection</title>
+    <style>
+        body {
+           background: url('https://source.unsplash.com/1600x900/?technology,ai') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: black;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            backdrop-filter: blur(8px);
+            padding: 20px;
+        }
+        h1 {
+            font-size: 3rem;
+            text-shadow: 2px 2px 15px rgba(0, 255, 255, 0.8);
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: linear-gradient(45deg, #00ffff, #008080);
+            border: none;
+            padding: 15px 35px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: 0.4s;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
+            margin: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .btn:hover {
+            background: linear-gradient(45deg, #008080, #00cccc);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 1);
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 1.3rem;
+            min-height: 50px;
+        }
+        .loading {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top: 5px solid #00ffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #video {
+            display: none;
+            border: 2px solid white;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Shape Detection</h1>
+        <button class="btn" onclick="startDetection()">Start Detection</button>
+        <br>
+        <!-- Added image instead of video -->
+        <img id="video" width="640" height="480">
+        <div id="output"></div>
+    </div>
+
+    <script>
+function startDetection() {
+    let videoElement = document.getElementById('video');
+    let outputElement = document.getElementById('output');
+    
+    // Show loading animation
+   // outputElement.innerHTML = '<div class="loading"></div>';
+
+    fetch("http://127.0.0.1:5000/detect")
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                outputElement.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+            } else {
+                videoElement.src = "http://127.0.0.1:5000/video_feed";  
+                videoElement.style.display = "block";
+
+                // **FIXED: Properly handle detected shapes**
+                if (Array.isArray(data.detected_shapes) && data.detected_shapes.length > 0) {
+                    outputElement.innerHTML = `<p style="color:limegreen;">Detected: ${data.detected_shapes.join(', ')}</p>`;
+                } 
+                
+            
+          /*  else {
+                    outputElement.innerHTML = `<p style="color:yellow;">No shapes detected.</p>`;
+                } */
+            }
+        })
+        .catch(error => {
+            outputElement.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+            console.error("Error:", error);
+        });
+}
+
+    </script>
+</body>
+</html>
